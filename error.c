@@ -55,8 +55,15 @@ void pe_error_print(FILE *stream, pe_err_e error) {
 	if (errno == 0) {
 		fprintf(stream, "ERROR [%d]: %s\n", error, pe_error_msg(error));
 	} else {
-		char errmsg[255];
-		strerror_r(errno, errmsg, sizeof(errmsg));
+
+#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+        char errmsg[255];
+        strerror_r(errno, errmsg, sizeof(errmsg));
+#else
+		char errmsg_buf[255];
+		char *errmsg = strerror_r(errno, errmsg_buf, sizeof(errmsg_buf));
+#endif
+
 		fprintf(stream, "ERROR [%d]: %s (%s)\n", error, pe_error_msg(error),
 			errmsg);
 	}
